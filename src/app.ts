@@ -62,6 +62,20 @@ class ProjectList {
     );
     this.element = importedNode.firstElementChild as HTMLElement;
     this.element.id = `${this.type}-projects`;
+
+    this.attach();
+    this.renderContent();
+  }
+
+  private renderContent() {
+    const ListId = `${this.type}-proejcts-list`;
+    this.element.querySelector("ul")!.id = ListId;
+    this.element.querySelector("h2")!.textContent =
+      this.type.toUpperCase() + " PROJECTS";
+  }
+
+  private attach() {
+    this.hostElement.insertAdjacentElement("beforeend", this.element);
   }
 }
 
@@ -161,4 +175,6 @@ class ProjectInput {
   }
 }
 
-const projectInp = new ProjectInput();
+const projectInput = new ProjectInput();
+const activeProjectList = new ProjectList("active");
+const finishedProjectList = new ProjectList("finished");
