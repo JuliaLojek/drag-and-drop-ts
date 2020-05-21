@@ -43,6 +43,36 @@ function autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
   return adjDescriptor;
 }
 
+/// Project State Management
+
+class State {
+  private projects: any[] = [];
+  private static instance: State;
+
+  private constructor() {}
+
+  static getInstance() {
+    // makes sure there is only one instance of this class and we always work with this one
+    if (this.instance) {
+      return this.instance;
+    }
+    this.instance = new State();
+    return this.instance;
+  }
+
+  addProject(title: string, desc: string, numOfPeople: number) {
+    const newProject = {
+      id: Math.random().toString(),
+      title: title,
+      description: desc,
+      people: numOfPeople,
+    };
+    this.projects.push(newProject);
+  }
+}
+
+const state = State.getInstance(); // creating an instance right here makes it available in the rest of the app (i.e. in the classes below to manage the state and present its values)
+
 /// ProjectList Class
 
 class ProjectList {
