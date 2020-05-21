@@ -43,6 +43,28 @@ function autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
   return adjDescriptor;
 }
 
+/// ProjectList Class
+
+class ProjectList {
+  templateElement: HTMLTemplateElement;
+  hostElement: HTMLDivElement;
+  element: HTMLElement;
+
+  constructor(private type: "active" | "finished") {
+    this.templateElement = document.querySelector(
+      "#project-list"
+    )! as HTMLTemplateElement;
+    this.hostElement = document.querySelector("#app")! as HTMLDivElement;
+
+    const importedNode = document.importNode(
+      this.templateElement.content,
+      true
+    );
+    this.element = importedNode.firstElementChild as HTMLElement;
+    this.element.id = `${this.type}-projects`;
+  }
+}
+
 /// ProjectInput Class
 
 class ProjectInput {
@@ -101,7 +123,8 @@ class ProjectInput {
       max: 5,
     };
 
-    if (  // checking if either is false
+    if (
+      // checking if either is false
       !validate(titleValidatable) ||
       !validate(descriptionValidatable) ||
       !validate(peopleValidatable)
