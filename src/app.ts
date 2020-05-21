@@ -43,11 +43,32 @@ function autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
   return adjDescriptor;
 }
 
+/// Project Type
+
+enum ProjectStatus {
+  Active,
+  Finished,
+}
+
+class Project {  // as a class so we can instantiate it
+  constructor(
+    public id: string,
+    public title: string,
+    public description: string,
+    public people: number,
+    public status: ProjectStatus
+  ) {}
+}
+
+/// Listener Type
+
+type Listener = (items: Project[]) => void;
+
 /// Project State Management
 
 class State {
-  private listeners: any[] = [];
-  private projects: any[] = [];
+  private listeners: Listener[] = [];
+  private projects: Project[] = [];
   private static instance: State;
 
   private constructor() {}
@@ -61,21 +82,22 @@ class State {
     return this.instance;
   }
 
-  addListener(listenerFn: Function) {
+  addListener(listenerFn: Listener) {
     this.listeners.push(listenerFn);
   }
 
   addProject(title: string, desc: string, numOfPeople: number) {
-    const newProject = {
-      id: Math.random().toString(),
-      title: title,
-      description: desc,
-      people: numOfPeople,
-    };
+    const newProject = new Project(
+      Math.random().toString(),
+      title,
+      desc,
+      numOfPeople,
+      ProjectStatus.Active
+    );
     this.projects.push(newProject);
 
     for (const listenerFn of this.listeners) {
-      listenerFn(this.projects.slice());  // we use slice to make a copy, to not mutate the original array
+      listenerFn(this.projects.slice()); // we use slice to make a copy, to not mutate the original array
     }
   }
 }
@@ -88,7 +110,7 @@ class ProjectList {
   templateElement: HTMLTemplateElement;
   hostElement: HTMLDivElement;
   element: HTMLElement;
-  assignedProjects: any[];
+  assignedProjects: Project[];
 
   constructor(private type: "active" | "finished") {
     this.templateElement = document.querySelector(
@@ -121,7 +143,9 @@ class ProjectList {
   }
 
   private renderProjects() {
-    const listEl = document.getElementById(`${this.type}-projects-list`)! as HTMLUListElement;
+    const listEl = document.getElementById(
+      `${this.type}-projects-list`
+    )! as HTMLUListElement;
     for (const projectItem of this.assignedProjects) {
       const listItem = document.createElement("li");
       listItem.textContent = projectItem.title;
