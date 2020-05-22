@@ -118,10 +118,10 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
     insertAtStart: boolean,
     newElementId?: string
   ) {
-    this.templateElement = document.querySelector(
+    this.templateElement = document.getElementById(
       templateId
     )! as HTMLTemplateElement;
-    this.hostElement = document.querySelector(hostElementId)! as T;
+    this.hostElement = document.getElementById(hostElementId)! as T;
 
     const importedNode = document.importNode(
       this.templateElement.content,
@@ -142,32 +142,26 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
     );
   }
 
-  abstract configure(): void;
+  abstract configure(): void; // private abstract methods are not supported in ts
   abstract renderContent(): void; // this code forces the inheriting classes to have these methods
 }
 
 /// ProjectList Class
 
-class ProjectList {
-  templateElement: HTMLTemplateElement;
-  hostElement: HTMLDivElement;
-  element: HTMLElement;
+class ProjectList extends Component<HTMLDivElement, HTMLElement> {
   assignedProjects: Project[];
 
   constructor(private type: "active" | "finished") {
-    this.templateElement = document.querySelector(
-      "#project-list"
-    )! as HTMLTemplateElement;
-    this.hostElement = document.querySelector("#app")! as HTMLDivElement;
+    super("project-list", "app", false);
+
     this.assignedProjects = [];
+    this.element.id = `${type}-projects`;
 
-    const importedNode = document.importNode(
-      this.templateElement.content,
-      true
-    );
-    this.element = importedNode.firstElementChild as HTMLElement;
-    this.element.id = `${this.type}-projects`;
+    this.configure();
+    this.renderContent();
+  }
 
+  configure() {
     state.addListener((projects: Project[]) => {
       const filteredProjects = projects.filter((project) => {
         if (this.type === "active") {
@@ -178,12 +172,9 @@ class ProjectList {
       this.assignedProjects = filteredProjects;
       this.renderProjects();
     });
-
-    this.attach();
-    this.renderContent();
   }
 
-  private renderContent() {
+  renderContent() {
     const ListId = `${this.type}-projects-list`;
     this.element.querySelector("ul")!.id = ListId;
     this.element.querySelector("h2")!.textContent =
@@ -201,34 +192,17 @@ class ProjectList {
       listEl.appendChild(listItem);
     }
   }
-
-  private attach() {
-    this.hostElement.insertAdjacentElement("beforeend", this.element);
-  }
 }
 
 /// ProjectInput Class
 
-class ProjectInput {
-  templateElement: HTMLTemplateElement;
-  hostElement: HTMLDivElement;
-  element: HTMLFormElement;
+class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
   titleInputElement: HTMLInputElement;
   descriptionInputElement: HTMLInputElement;
   peopleInputElement: HTMLInputElement;
 
   constructor() {
-    this.templateElement = document.querySelector(
-      "#project-input"
-    )! as HTMLTemplateElement;
-    this.hostElement = document.querySelector("#app")! as HTMLDivElement;
-
-    const importedNode = document.importNode(
-      this.templateElement.content,
-      true
-    );
-    this.element = importedNode.firstElementChild as HTMLFormElement;
-    this.element.id = "user-input";
+    super("project-input", "app", true, "user-input");
 
     this.titleInputElement = this.element.querySelector(
       "#title"
@@ -241,8 +215,13 @@ class ProjectInput {
     ) as HTMLInputElement;
 
     this.configure();
-    this.attach();
   }
+
+  configure() {
+    this.element.addEventListener("submit", this.submitHandler);
+  }
+
+  renderContent() {}
 
   private gatherUserInput(): [string, string, number] | void {
     const enteredTitle = this.titleInputElement.value;
@@ -292,14 +271,6 @@ class ProjectInput {
     this.titleInputElement.value = "";
     this.descriptionInputElement.value = "";
     this.peopleInputElement.value = "";
-  }
-
-  private configure() {
-    this.element.addEventListener("submit", this.submitHandler);
-  }
-
-  private attach() {
-    this.hostElement.insertAdjacentElement("afterbegin", this.element);
   }
 }
 
