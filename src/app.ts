@@ -161,7 +161,8 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
 
 /// SingleProject Class
 
-class SingleProject extends Component<HTMLUListElement, HTMLLIElement> {
+class SingleProject extends Component<HTMLUListElement, HTMLLIElement>
+  implements Draggable {
   private project: Project;
 
   constructor(hostId: string, project: Project) {
@@ -172,7 +173,19 @@ class SingleProject extends Component<HTMLUListElement, HTMLLIElement> {
     this.renderContent();
   }
 
-  configure() {}
+  @autobind
+  dragStartHandler(event: DragEvent) {
+    console.log(event);
+  }
+
+  dragEndHandler(event: DragEvent) {
+    console.log("dragEnd", event);
+  }
+
+  configure() {
+    this.element.addEventListener("dragstart", this.dragStartHandler);
+    this.element.addEventListener("dragend", this.dragEndHandler);
+  }
 
   renderContent() {
     this.element.querySelector("h2")!.textContent = this.project.title;
