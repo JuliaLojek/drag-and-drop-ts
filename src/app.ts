@@ -50,7 +50,8 @@ enum ProjectStatus {
   Finished,
 }
 
-class Project {  // as a class so we can instantiate it
+class Project {
+  // as a class so we can instantiate it
   constructor(
     public id: string,
     public title: string,
@@ -104,6 +105,47 @@ class State {
 
 const state = State.getInstance(); // creating an instance right here makes it available in the rest of the app (i.e. in the classes below to manage the state and present its values)
 
+/// Component Base Class
+
+abstract class Component<T extends HTMLElement, U extends HTMLElement> {
+  templateElement: HTMLTemplateElement;
+  hostElement: T;
+  element: U;
+
+  constructor(
+    templateId: string,
+    hostElementId: string,
+    insertAtStart: boolean,
+    newElementId?: string
+  ) {
+    this.templateElement = document.querySelector(
+      templateId
+    )! as HTMLTemplateElement;
+    this.hostElement = document.querySelector(hostElementId)! as T;
+
+    const importedNode = document.importNode(
+      this.templateElement.content,
+      true
+    );
+    this.element = importedNode.firstElementChild as U;
+    if (newElementId) {
+      this.element.id = newElementId;
+    }
+
+    this.attach(insertAtStart);
+  }
+
+  private attach(insertAtBeginning: boolean) {
+    this.hostElement.insertAdjacentElement(
+      insertAtBeginning ? "afterbegin" : "beforeend",
+      this.element
+    );
+  }
+
+  abstract configure(): void;
+  abstract renderContent(): void; // this code forces the inheriting classes to have these methods
+}
+
 /// ProjectList Class
 
 class ProjectList {
@@ -127,7 +169,7 @@ class ProjectList {
     this.element.id = `${this.type}-projects`;
 
     state.addListener((projects: Project[]) => {
-      const filteredProjects = projects.filter(project => {
+      const filteredProjects = projects.filter((project) => {
         if (this.type === "active") {
           return project.status === ProjectStatus.Active;
         }
