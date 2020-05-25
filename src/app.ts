@@ -110,6 +110,19 @@ class State {
     );
     this.projects.push(newProject);
 
+    this.updateListeners();
+  }
+
+  moveProject(id: string, newStatus: ProjectStatus) {
+    const project = this.projects.find((project) => project.id === id);
+    if (project && project.status !== newStatus) {
+      // if the status is the same, don't re-render the DOM
+      project.status = newStatus;
+      this.updateListeners();
+    }
+  }
+
+  private updateListeners() {
     for (const listenerFn of this.listeners) {
       listenerFn(this.projects.slice()); // we use slice to make a copy, to not mutate the original array
     }
@@ -179,9 +192,7 @@ class SingleProject extends Component<HTMLUListElement, HTMLLIElement>
     event.dataTransfer!.effectAllowed = "move";
   }
 
-  dragEndHandler(_: DragEvent) {
-    console.log("dragEnd");
-  }
+  dragEndHandler(_: DragEvent) {}
 
   configure() {
     this.element.addEventListener("dragstart", this.dragStartHandler);
@@ -228,8 +239,13 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement>
     listEl.classList.remove("droppable");
   }
 
+  @autobind
   dropHandler(event: DragEvent) {
-    console.log(event.dataTransfer!.getData("text/plain"));
+    const projectId = event.dataTransfer!.getData("text/plain");
+    state.moveProject(
+      projectId,
+      this.type === "active" ? ProjectStatus.Active : ProjectStatus.Finished
+    );
   }
 
   configure() {
