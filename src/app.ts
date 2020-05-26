@@ -17,6 +17,7 @@ console.log(_.shuffle([3, 5, 1, 8]));
 import "reflect-metadata";
 import { plainToClass } from "class-transformer";
 import Product from "./models/product";
+import { validate } from "class-validator"; // it's a fucntion to validate decorators added to class, we validate every instance of that class
 
 const products = [
   // imitates fetched data
@@ -29,6 +30,17 @@ const products = [
 //   return new Product(product.title, product.price);
 // });
 
-const loadedProducts = plainToClass(Product, products); // it goes through the entire array and convert its elements to the class model provided in the first argument
+const loadedProducts = plainToClass(Product, products); // it goes through the entire array and converts its elements to the class model provided in the first argument
 
 loadedProducts.forEach((product) => console.log(product.getInfo()));
+
+const newProd = new Product("", -5.99);
+
+validate(newProd).then((errors) => {
+  if (errors.length > 0) {
+    console.log("validation failed!");
+    console.log(errors);
+  } else {
+    console.log(newProd.getInfo());
+  }
+});
